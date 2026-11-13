@@ -553,9 +553,30 @@ textarea{width:100%;line-height:1.55;resize:vertical;min-height:150px}
 .crab .mark,.crab .mark-t{opacity:0;transition:opacity .5s} .crab.show2 .mark,.crab.show2 .mark-t{opacity:1}
 .crab .mark{stroke:var(--text2);stroke-dasharray:4 4}
 
+/* Probeklausur */
+.pk-list{margin-top:44px}
+.pk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:12px}
+.pk-card{display:flex;flex-direction:column;gap:6px;text-decoration:none;color:var(--text);border-color:rgba(255,184,77,.45);background:linear-gradient(135deg,rgba(255,184,77,.14),rgba(10,36,56,.7))}
+.pk-card b{font:800 1.3rem var(--display);color:var(--amber)} .pk-card span{color:var(--text2)} .pk-card:hover{color:var(--text);border-color:var(--amber)}
+.pk-st{display:flex;align-items:center;gap:4px;font-size:.88rem} .pk-st i{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--c);color:var(--abyss);font:800 .75rem var(--display);font-style:normal}
+.pk{--c:var(--amber)} .pk-exam{--c:var(--amber);max-width:1400px;margin:0 auto;padding:26px clamp(16px,3vw,34px) 40px}
+.pk-setup{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;align-items:start;margin:20px 0}
+.pk-info{padding-left:1.2em;margin:0} .pk-info li{margin:6px 0}
+.pk-setup .probe-opts{margin:0} .pk-setup .probe-opts label{align-items:flex-start} .pk-setup .btn{margin-top:8px;align-self:flex-start}
+.pk-bar{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:18px} .pk-bar h1{font:800 clamp(1.8rem,3.6vw,2.6rem)/1.05 var(--display);margin:4px 0 0}
+.pk-bar .clock{position:sticky;top:70px}
+.pk-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:24px;align-items:start}
+.pk-mat{position:sticky;top:76px;max-height:calc(100vh - 92px);overflow:auto;padding-right:4px}
+.pk-tabs{display:flex;gap:6px;margin-bottom:10px}
+.pk-m h3{color:var(--amber)} .pk-m p{font-size:1rem}
+.pk-nr{font:800 1.1rem var(--display);color:var(--amber);margin:22px 0 8px} .pk-nr:first-child{margin-top:0}
+.op-x{font:700 .9rem var(--display);color:var(--amber);border:1.5px solid var(--amber);border-radius:8px;padding:3px 10px;cursor:help}
+.pk-exam.ernst .chkbtn{display:none}
+
 /* ---------- Responsiv ---------- */
 @media (max-width: 980px){
   .plan-grid{grid-template-columns:1fr} .plan-side{position:static}
+  .pk-cols,.pk-setup{grid-template-columns:1fr} .pk-mat{position:static;max-height:none}
   .m3-wrap,.tr-wrap,.crab-wrap,.lab2,.exp-lab,.exp-res,.mic,.phaen,.label-wrap{grid-template-columns:1fr}
   .m3-side{position:static}
   .mic-view{max-width:420px;margin:0 auto;width:100%}
@@ -2839,6 +2860,152 @@ MODULES.crab=(host)=>{
   $('.cb',host).addEventListener('click',()=>{ sv.classList.add('show2'); markDone('crab',15); });
 };
 
+/* ===== Probeklausuren im Klausurformat ===== */
+OPERATORS['Darstellen']='Sachverhalte, Zusammenhänge oder Methoden strukturiert und fachsprachlich wiedergeben.';
+OPERATORS['Zusammenfassen']='Das Wesentliche in konzentrierter, fachsprachlicher Form wiedergeben.';
+
+function figPkGraph(){
+  const X=v=>70+v*16, Y=v=>260-v*44;
+  let o=`<rect x="0" y="0" width="600" height="330" fill="#fff"/>`;
+  for(let v=1;v<=5;v++) o+=`<line x1="70" y1="${Y(v)}" x2="${X(31)}" y2="${Y(v)}" stroke="#E4E1EE"/>`;
+  o+=`<line x1="70" y1="260" x2="${X(32)}" y2="260" stroke="#221A4A" stroke-width="2"/><line x1="70" y1="260" x2="70" y2="20" stroke="#221A4A" stroke-width="2"/>`;
+  for(let v=0;v<=30;v+=5) o+=`<line x1="${X(v)}" y1="260" x2="${X(v)}" y2="266" stroke="#221A4A"/><text x="${X(v)}" y="282" text-anchor="middle" font-size="13" fill="#221A4A">${v}</text>`;
+  for(let v=0;v<=5;v++) o+=`<text x="60" y="${Y(v)+5}" text-anchor="end" font-size="13" fill="#221A4A">${v}</text>`;
+  o+=`<line x1="${X(0)}" y1="${Y(2.2)}" x2="${X(31)}" y2="${Y(4.1)}" stroke="#221A4A" stroke-width="3.5"/><line x1="${X(0)}" y1="${Y(.9)}" x2="${X(31)}" y2="${Y(2.7)}" stroke="#221A4A" stroke-width="3.5"/>`;
+  o+=`<text x="${X(10)}" y="${Y(3.2)}" font-size="14" fill="#221A4A">Darmflüssigkeit</text><text x="${X(10)}" y="${Y(1.85)}" font-size="14" fill="#221A4A">Blut</text>`;
+  o+=`<text x="${X(16)}" y="310" text-anchor="middle" font-size="13.5" fill="#221A4A">NaCl-Konzentration des Umgebungswassers [%]</text><text x="22" y="140" text-anchor="middle" font-size="13.5" fill="#221A4A" transform="rotate(-90 22 140)">NaCl-Konzentration der Körperflüssigkeiten [%]</text>`;
+  return svgWrap('0 0 600 330',o,'Diagramm: NaCl-Konzentration in Darmflüssigkeit und Blut in Abhängigkeit vom Umgebungswasser');
+}
+function figPkSandwich(){
+  // schräg angeschnittener Membranblock: Proteinschicht – Lipid-Doppelschicht – Proteinschicht
+  const dx=60, dy=-36; let o='';
+  const slab=(y,h,front,top,side)=>`<path d="M60 ${y} L460 ${y} L${460+dx} ${y+dy} L${60+dx} ${y+dy}Z" fill="${top}" stroke="#7A5A3A" stroke-width="1.2"/><rect x="60" y="${y}" width="400" height="${h}" fill="${front}" stroke="#7A5A3A" stroke-width="1.2"/><path d="M460 ${y} L${460+dx} ${y+dy} L${460+dx} ${y+dy+h} L460 ${y+h}Z" fill="${side}" stroke="#7A5A3A" stroke-width="1.2"/>`;
+  o+=slab(214,26,'#C9A27E','#DDBB98','#B08763');
+  // Lipid-Doppelschicht (Vorderseite)
+  o+=`<rect x="60" y="128" width="400" height="86" fill="#F6E27A"/>`;
+  for(let x=72;x<=450;x+=18){ o+=`<path d="M${x-3} 140 v28 M${x+3} 140 v28 M${x-3} 202 v-28 M${x+3} 202 v-28" stroke="#C9A62E" stroke-width="2"/><circle cx="${x}" cy="138" r="8" fill="#3D7CC9" stroke="#24508A"/><circle cx="${x}" cy="204" r="8" fill="#3D7CC9" stroke="#24508A"/>`; }
+  o+=`<path d="M460 128 L${460+dx} ${128+dy} L${460+dx} ${214+dy} L460 214Z" fill="#E9CF5E" stroke="#7A5A3A" stroke-width="1"/>`;
+  o+=slab(102,26,'#C9A27E','#DDBB98','#B08763');
+  for(let x=100;x<=440;x+=50){ o+=`<path d="M${x} 102 v26 M${x} 214 v26" stroke="#9C7652" stroke-width="1.4"/>`; }
+  const t=(x,y,s)=>`<text x="${x}" y="${y}" font-size="14" fill="#221A4A">${s}</text>`;
+  o+=t(560,92,'Proteinschicht')+`<line x1="556" y1="88" x2="${470+dx/2}" y2="${112+dy/2}" stroke="#221A4A"/>`;
+  o+=t(560,170,'Lipid-Doppelschicht')+`<line x1="556" y1="166" x2="${470+dx/2}" y2="${170+dy/2}" stroke="#221A4A"/>`;
+  o+=t(560,248,'Proteinschicht')+`<line x1="556" y1="244" x2="${470+dx/2}" y2="${226+dy/2}" stroke="#221A4A"/>`;
+  return svgWrap('0 0 720 270',o,'Modell der Biomembran mit beidseitigen Proteinschichten');
+}
+FIGS.pkGraph=figPkGraph; FIGS.pkSandwich=figPkSandwich;
+
+const PROBEKLAUSUREN=[{
+  id:'salzkrebschen', title:'Die Salzkrebschen im Salzsee', minutes:90, stations:['osmose','homoeostase','membran','transport'],
+  intro:'Salzkrebschen sind ein beliebtes Fischfutter für Nutz- und Zierfische. Sie werden in Salzwasser gezüchtet. In der Natur kommen sie in großen Mengen in Salzseen vor. Das salzige Wasser spielt für das Salzkrebschen eine große Rolle.',
+  info:['Der Klausurbogen muss <strong>durchnummeriert</strong> und <strong>die Hälfte der Seite als Rand</strong> frei gelassen werden.','Alle Aufgaben – natürlich mit Ausnahme der Skizzen – sind in <strong>ganzen Sätzen bzw. einem Fließtext</strong> zu beantworten. Notizen können ggf. auf einem Schmierzettel gemacht werden, der am Ende mit abgegeben wird.','Es darf <strong>nicht</strong> mit Bleistift oder in Rot geschrieben werden.','Lies die Aufgabenstellung genau durch, bevor du sie bearbeitest.'],
+  materials:[
+    {id:'M1', title:'Artemia salina – das „Salzkrebschen“', html:'<p>Salzkrebschen sind ein beliebtes Fischfutter für Nutz- und Zierfische. Sie werden in Salzwasser gezüchtet. In der Natur kommen sie in großen Mengen in Salzseen vor. In diesen kann sich der Salzgehalt in kurzer Zeit stark ändern, zum Beispiel wenn es regnet oder die Seen stark austrocknen. Salzkrebschen können sowohl in konzentriertem Salzwasser als auch bei sehr geringen Salzkonzentrationen überleben.</p><p>Die Salzkrebschen gehören zu den Kiemenfüßern, ihre Kiemen befinden sich an ihren Brustbeinen. Ihre Körperoberfläche ist zum größten Teil für Wasser undurchlässig. Das Gewebe der stark durchbluteten Kiemen ist dagegen gut wasserdurchlässig.</p><p>Salzkrebschen trinken kontinuierlich Wasser – pro Stunde etwa drei Prozent der eigenen Körpermasse. Es gelangt in ihren Darm. Die mit dem Wasser aufgenommenen Natrium- und Chlorid-Ionen gelangen über die Darmzellen in das Blut. Überschüssige Ionen werden über die Kiemen ausgeschieden. Benötigen Salzkrebschen Natrium- und Chlorid-Ionen, können die Ionen aus der Umgebung über die Kiemen aufgenommen werden.</p>'},
+    {id:'M2', title:'Salzkonzentration der Krebse', html:'<p>In einem Versuch wurde die Salzkonzentration (NaCl) im Blut und in der Darmflüssigkeit in Abhängigkeit von der Konzentration des Umgebungswassers bestimmt.</p>', fig:'pkGraph'},
+    {id:'M3', title:'Modell der Biomembran', html:'', fig:'pkSandwich'}
+  ],
+  tasks:[
+    {nr:'1 a', op:'Darstellen', ops:['Darstellen','Erklären'], afb:'I–II', p:6,
+     q:'Stelle jeweils kurz die osmotischen Vorgänge einer tierischen Zelle dar. Erkläre dabei die Bedeutung der Veränderung des Salzgehaltes im Wasser für das Salzkrebschen (M1).',
+     crit:[
+      {t:'Hypotonische Umgebung (z. B. nach Regen): Wasser strömt in die Zelle ein', p:1, all:[['hypoton','destilliert','geringe salz','geringem salz','niedrige salz','niedrigem salz','suesswasser','regen'],['stroemt ein','stroemt in','einstroem','nimmt wasser auf','wassereinstrom','in die zelle']]},
+      {t:'Zelle schwillt an und kann platzen', p:1, some:['platz','haemolyse'], min:1},
+      {t:'Hypertonische Umgebung (z. B. bei Trockenheit): Wasser strömt aus, die Zelle schrumpft', p:1, all:[['hyperton','konzentriert','hohe salz','hoher salz','hohem salz'],['stroemt aus','ausstroem','verliert wasser','wasserverlust','schrumpf']]},
+      {t:'Begründung: Membran ist selektiv permeabel (für Wasser durchlässig, für Ionen kaum)', p:1, some:['selektiv permeabel','semipermeabel','halbdurchlaessig','selektiv durchlaessig'], min:1},
+      {t:'Salzgehalt im Salzsee wechselt durch Regen und Austrocknung', p:1, all:[['regen','trocken','austrockn','verdunst'],['wechsel','aendert','schwank','veraender']]},
+      {t:'Bedeutung: ständige Gefahr von Wasserverlust bzw. Platzen – Salzkrebschen müssen regulieren', p:1, some:['osmoregulation','regulier','gefahr','lebensbedrohlich','ueberleben','gegensteuern'], min:1}],
+     hilfen:['Unterscheide zwei Fälle: Die Zelle liegt in einer Lösung mit weniger Salz bzw. mit mehr Salz als im Zellinneren. Wohin strömt jeweils das Wasser?','Fachbegriffe: hypotonisch, hypertonisch, selektiv permeable Membran, Wassereinstrom/-ausstrom, Platzen/Schrumpfen. Dann M1: Was passiert im Salzsee bei Regen, was bei Trockenheit?','Satzanfänge: „Befindet sich eine tierische Zelle in einer hypotonischen Lösung, …“ – „Da die Membran selektiv permeabel ist, …“ – „Für das Salzkrebschen bedeutet das, …“'],
+     model:'Befindet sich eine tierische Zelle in einer hypotonischen Lösung, zum Beispiel in destilliertem Wasser, ist die Konzentration gelöster Teilchen innen höher als außen. Da die Zellmembran selektiv permeabel ist – durchlässig für Wasser, kaum für die gelösten Ionen –, strömt mehr Wasser in die Zelle ein als aus. Die Zelle schwillt an und kann platzen. In einer hypertonischen Lösung mit hoher Salzkonzentration strömt dagegen Wasser aus der Zelle aus, sie verliert Wasser und schrumpft. Im Salzsee des Salzkrebschens wechselt der Salzgehalt häufig: Nach Regen sinkt er, bei Trockenheit und Verdunstung steigt er stark an. Für das Salzkrebschen bedeutet das eine ständige Gefahr – entweder osmotischer Wasserverlust oder Wassereinstrom bis zum Platzen der Zellen. Um zu überleben, muss es seinen Wasser- und Salzhaushalt aktiv regulieren (Osmoregulation).'},
+    {nr:'1 b', op:'Auswerten', ops:['Zusammenfassen','Auswerten'], afb:'II', p:8,
+     q:'Fasse die in M2 dargestellten Ergebnisse zusammen und werte diese hinsichtlich der Informationen aus M1 aus.',
+     crit:[
+      {t:'Achsen und Kurven benannt (Umgebungswasser; Darmflüssigkeit und Blut)', p:1, all:[['umgebungswasser','umgebung'],['blut'],['darm']]},
+      {t:'Beide Konzentrationen steigen mit dem Salzgehalt der Umgebung linear an', p:1, some:['linear','proportional','gleichmaessig','steigt','steigen','zunehm','anstieg'], min:1},
+      {t:'Exemplarische Werte (z. B. 0 %: Darm 2,2 %, Blut 0,9 %; 30 %: Darm ca. 4 %, Blut ca. 2,5–2,7 %)', p:1, some:['2,2','0,9','4,1','4 %','2,7','2,5','30 %'], min:2},
+      {t:'Darmflüssigkeit ist stets salzreicher als das Blut', p:1, some:['salzreicher als das blut','salzreicher als blut','mehr salz als das blut','mehr salz als im blut','darmfluessigkeit hoeher','darmfluessigkeit liegt hoeher','darmfluessigkeit ist hoeher','darmfluessigkeit ist immer hoeher','darmfluessigkeit ist stets hoeher','hoeher als im blut','hoeher als das blut','hoeher als die des blut','im blut niedriger','im blut geringer','blut ist geringer','blut ist niedriger','blut stets niedriger','blut immer niedriger','blut liegt unter'], min:1},
+      {t:'Körperflüssigkeiten bleiben weit unter der Umgebungskonzentration', p:1, some:['niedriger als im umgebungswasser','niedriger als das umgebungswasser','deutlich unter','weit unter','viel geringer','deutlich geringer','deutlich niedriger','hypoton'], min:1},
+      {t:'Aufgenommenes Salzwasser wird im Darm verdünnt (Wasser diffundiert in die Darmflüssigkeit)', p:1, some:['verduenn','konzentrationsausgleich','diffundier'], min:1},
+      {t:'Na⁺- und Cl⁻-Ionen gelangen passiv (mit dem Gefälle) ins Blut', p:1, all:[['ionen','natrium','nacl'],['passiv','diffusion','konzentrationsgefaelle','gefaelle']]},
+      {t:'Geringere Blutkonzentration durch aktive Ausscheidung über die Kiemen', p:1, all:[['kieme'],['aktiv','atp','energie']]}],
+     hilfen:['Beschreibe zuerst, was dargestellt ist (Achsen, zwei Kurven), dann den Verlauf mit Zahlen. Erst danach deutest du mit M1.','Vergleiche drei Konzentrationen: Umgebungswasser – Darmflüssigkeit – Blut. Was passiert mit dem getrunkenen Salzwasser im Darm? Wie gelangen die Ionen ins Blut, wie werden sie wieder los?','Satzanfänge: „Das Diagramm zeigt …“ – „Mit steigender NaCl-Konzentration des Umgebungswassers …“ – „Bei 30 % beträgt …“ – „Dass das Blut weniger Salz enthält als die Darmflüssigkeit, lässt sich damit erklären, dass …“'],
+     model:'Das Diagramm zeigt die NaCl-Konzentration von Darmflüssigkeit und Blut in Abhängigkeit von der NaCl-Konzentration des Umgebungswassers. Mit steigender Konzentration des Umgebungswassers steigen beide Werte linear an. Bei 0 % liegt die Darmflüssigkeit bei etwa 2,2 % und das Blut bei 0,9 %, bei 30 % liegt die Darmflüssigkeit bei etwa 4 % und das Blut bei etwa 2,7 %. Die Darmflüssigkeit ist also stets salzreicher als das Blut, und beide Körperflüssigkeiten bleiben weit unter der Konzentration des Umgebungswassers. Auswertung mit M1: Das getrunkene Salzwasser ist hyperton und wird im Darm zunächst verdünnt, weil Wassermoleküle in die Darmflüssigkeit diffundieren. Natrium- und Chlorid-Ionen werden ins Blut aufgenommen; da ihre Konzentration dort geringer ist als in der Darmflüssigkeit, erfolgt dieser Transport passiv mit dem Konzentrationsgefälle. Dass das Blut trotzdem deutlich weniger Salz enthält, liegt daran, dass überschüssige Ionen über die gut durchbluteten Kiemen aktiv unter Energieverbrauch ausgeschieden werden.'},
+    {nr:'1 c', op:'Erklären', ops:['Erklären','Hypothese aufstellen'], afb:'II–III', p:6,
+     q:'Erkläre das Trinkverhalten der Salzkrebschen hinsichtlich der Lebensbedingungen und stelle eine Hypothese auf, welche Folgen stärkere Trockenphasen mit sich bringen.',
+     crit:[
+      {t:'Ständiger osmotischer Wasserverlust über die durchlässigen Kiemen', p:1, all:[['kieme'],['wasserverlust','verlieren wasser','verliert wasser','wasser verlier','stroemt aus','ausstroem','diffundier']]},
+      {t:'Kontinuierliches Trinken gleicht den Wasserverlust aus', p:1, some:['ausgleich','ausgeglichen','gleicht den','gleichen den','gleicht diesen','gleichen diesen','gleicht das','ersetz','kompensier'], min:1},
+      {t:'Mit dem Wasser wird viel Salz aufgenommen, das unter Energieaufwand ausgeschieden werden muss', p:1, all:[['salz','nacl','ionen'],['energie','atp','aktiv']]},
+      {t:'Hypothese ausdrücklich formuliert', p:1, some:['hypothese','ich vermute','vermutlich','vermutung'], min:1},
+      {t:'Trockenphasen erhöhen die Salzkonzentration → stärkerer Wasserverlust, mehr Salzaufnahme', p:1, all:[['trocken','austrockn','verdunst'],['steigt','steigende','hoeher','zunehm','erhoeh']]},
+      {t:'Folge: Grenze der Regulation – ab einer bestimmten Konzentration kein Überleben', p:1, some:['nicht mehr ueberleben','nicht ueberleben','sterben','tod','grenze','nicht mehr ausgleichen','nicht mehr ausreichend'], min:1}],
+     hilfen:['Warum trinkt ein Tier, das im Wasser lebt? Überlege, wo es Wasser verliert – und warum (M1: Kiemen sind wasserdurchlässig).','Kette: hypertonische Umgebung → Wasser strömt an den Kiemen aus → Trinken gleicht aus → dabei viel NaCl aufgenommen → aktive Ausscheidung kostet Energie. Für die Hypothese: Was ändert eine Trockenphase am Salzgehalt?','Satzanfänge: „Da das Umgebungswasser hyperton ist, …“ – „Um diesen Verlust auszugleichen, …“ – „Ich stelle die Hypothese auf, dass …, weil …“'],
+     model:'Salzkrebschen leben meist in stark salzhaltigem, also hypertonischem Wasser. Über die gut wasserdurchlässigen Kiemen verlieren sie deshalb ständig Wasser, weil Wassermoleküle osmotisch in das Umgebungswasser diffundieren, wo die Salzkonzentration höher ist. Durch das kontinuierliche Trinken gleichen sie diesen Wasserverlust aus; deshalb nehmen sie trotz der großen Trinkmenge nicht an Masse zu. Mit dem Wasser nehmen sie allerdings auch viel Natriumchlorid auf, dessen Ionen an den Kiemen aktiv unter Verbrauch von Energie (ATP) ausgeschieden werden müssen. Hypothese: Ich vermute, dass ab einer bestimmten Salzkonzentration die Salzkrebschen nicht mehr überleben können. Bei stärkeren Trockenphasen verdunstet Wasser, die Salzkonzentration im See steigt. Dadurch nimmt der osmotische Wasserverlust zu, die Tiere müssten noch mehr trinken und noch mehr Salz unter Energieaufwand ausscheiden. Irgendwann können sie den Verlust nicht mehr ausgleichen – die Grenze ihrer Regulation ist erreicht.'},
+    {nr:'2 a', op:'Erklären', ops:['Erklären'], afb:'I–II', p:4,
+     q:'Erkläre die Bedeutung von Modellen für die Biologie anhand des molekularen Aufbaus des vorliegenden Modells (M3).',
+     crit:[
+      {t:'Modell als Sandwich-Modell (Davson & Danielli) benannt', p:1, some:['sandwich','davson','danielli'], min:1},
+      {t:'Lipid-Doppelschicht mit hydrophilen Köpfen und hydrophoben Schwänzen', p:1, all:[['lipid','phospholipid'],['hydrophil','hydrophob','kopf','koepfe','schwanz','schwaenze']]},
+      {t:'Proteine bilden beidseitig eine geschlossene Schicht', p:1, all:[['protein'],['schicht','bedeck','geschlossen','beidseitig','aussen']]},
+      {t:'Bedeutung: Modelle vereinfachen und veranschaulichen, was man nicht direkt sehen kann', p:1, some:['vereinfach','veranschaulich','anschaulich','ueberblick','vorstell','reduzier','sichtbar'], min:1}],
+     hilfen:['Beschreibe zuerst, woraus das Modell aufgebaut ist (von außen nach innen). Dann: Wozu braucht man so ein Modell überhaupt?','Fachbegriffe: Sandwich-Modell, Proteinschicht, Lipid-Doppelschicht, hydrophiler Kopf, hydrophobe Fettsäureschwänze; Modell = vereinfachte, anschauliche Darstellung.','Satzanfänge: „Das Modell zeigt …“ – „Modelle sind in der Biologie wichtig, weil …“'],
+     model:'Das Modell in M3 zeigt das Sandwich-Modell nach Davson und Danielli. In der Mitte liegt eine Lipid-Doppelschicht aus Phospholipiden: Die hydrophilen Köpfe zeigen nach außen zum Wasser, die hydrophoben Fettsäureschwänze liegen innen zusammen. Beidseitig ist diese Doppelschicht von einer geschlossenen Proteinschicht bedeckt. Modelle sind für die Biologie wichtig, weil sie Strukturen vereinfacht und anschaulich darstellen, die man nicht direkt sehen kann. Sie geben einen Überblick, machen Vorgänge vorstellbar und lassen sich mit Befunden überprüfen.'},
+    {nr:'2 b', op:'Erläutern', ops:['Erläutern'], afb:'II–III', p:6,
+     q:'Erläutere auf Grundlage der Struktur der Biomembran die möglichen biologischen Probleme dieses Modells (M3).',
+     crit:[
+      {t:'Modelle sind vereinfacht, zeigen nicht alle Details', p:1, some:['keine details','nicht alle','unvollstaendig','vereinfacht','grenze'], min:1},
+      {t:'Proteine liegen nicht als geschlossene Schicht auf, sondern sind eingelagert', p:1, all:[['protein'],['nicht als schicht','keine geschlossene','nicht geschlossen','keine durchgehende','nicht durchgehend','eingelager','integral','durchspann']]},
+      {t:'Selektiver Stofftransport wäre nicht erklärbar (Kanäle, Carrier fehlen)', p:1, some:['semipermeab','selektiv','kanal','carrier','stofftransport','transportprotein'], min:1},
+      {t:'Hydrophobe Proteinbereiche können nicht dauerhaft im Wasser liegen', p:1, all:[['hydrophob'],['protein']]},
+      {t:'Beweglichkeit der Membranbestandteile fehlt (starr)', p:1, some:['beweglich','fluid','fluessig','starr'], min:1},
+      {t:'Heute: Flüssig-Mosaik-Modell (Singer & Nicolson)', p:1, some:['mosaik','singer','nicolson'], min:1}],
+     hilfen:['Was wissen wir heute über Membranproteine? Liegen sie wie eine Decke auf der Membran?','Prüfe das Modell an drei Befunden: Proteine haben hydrophobe Bereiche; Membranen transportieren selektiv über Kanäle und Carrier; Membranbestandteile sind beweglich (Frye & Edidin).','Satzanfänge: „Ein Problem des Modells ist, dass …“ – „Da Membranproteine hydrophobe Bereiche besitzen, …“ – „Heute geht man vom … aus.“'],
+     model:'Modelle sind vereinfacht und zeigen nicht alle Details – das Sandwich-Modell hat jedoch auch grundsätzliche Probleme. Membranproteine besitzen hydrophobe Bereiche; diese könnten nicht dauerhaft als Schicht an der wässrigen Oberfläche liegen. Tatsächlich sind die meisten Proteine in die Lipid-Doppelschicht eingelagert, integrale Proteine durchspannen sie sogar. Eine geschlossene Proteinschicht würde außerdem den selektiven Stofftransport nicht erklären, denn dafür braucht die Membran Kanäle und Carrier, die die Lipidschicht durchqueren. Zudem wäre die Membran starr; Versuche wie der von Frye und Edidin zeigen aber, dass Membranbestandteile beweglich sind. Deshalb gilt heute das Flüssig-Mosaik-Modell nach Singer und Nicolson.'}
+  ]
+}];
+
+/* ---------- Ansichten ---------- */
+let pkTimer=null;
+function probeCards(){ return `<section class="pk-list"><h2 class="h2">Probeklausuren im Klausurformat</h2><p class="muted">Eine ganze Klausur mit Material, Operatoren und Erwartungshorizont – so wie im Unterricht.</p><div class="pk-grid">${PROBEKLAUSUREN.map(k=>{ const tot=k.tasks.reduce((a,t)=>a+t.p,0), best=k.tasks.reduce((a,t,i)=>a+(S.best[`pk-${k.id}-${i}`]||0),0);
+  return `<a class="panel pk-card" href="#/pk/${k.id}"><b>${esc(k.title)}</b><span>${k.tasks.length} Aufgaben · ${tot} Punkte · ${k.minutes} Minuten</span><span class="pk-st">${k.stations.map(id=>{ const c=chById(id); return `<i style="--c:${c.color}">${c.nr}</i>`; }).join('')} Stationen</span>${best?`<span class="pc">Bisher bester Check: ${best} von ${tot} Punkten</span>`:''}</a>`; }).join('')}</div></section>`; }
+
+function renderPK(k){
+  clearInterval(pkTimer); const tot=k.tasks.reduce((a,t)=>a+t.p,0);
+  $('#main').innerHTML=`<section class="plain wide pk"><a class="back" href="#/probe">Klausur-Simulator</a><p class="ch-depth"><span class="sbar"></span>Probeklausur · ${k.tasks.length} Aufgaben · ${tot} Punkte</p><h1 class="sec-t">${esc(k.title)}</h1><p class="lead">${esc(k.intro)}</p>
+    <div class="pk-setup"><div class="panel"><h3>Informationen</h3><ul class="pk-info">${k.info.map(i=>`<li>${i}</li>`).join('')}</ul></div>
+      <fieldset class="panel probe-opts"><legend>Wie willst du schreiben?</legend>
+        <label><input type="radio" name="pkm" value="ueben" checked> <span><b>Übungsmodus</b> – gestufte Hilfen und Check nach jeder Aufgabe</span></label>
+        <label><input type="radio" name="pkm" value="ernst"> <span><b>Ernstfall</b> – ohne Hilfen, Auswertung erst bei Abgabe</span></label>
+        <label><input type="checkbox" id="pktm"> <span>Mit Countdown (${k.minutes} Minuten)</span></label>
+        <button class="btn" id="pkgo">Klausur beginnen</button></fieldset></div>
+    <p class="small muted">Passt zu den Stationen: ${k.stations.map(id=>{ const c=chById(id); return `<a href="#/k/${c.id}/entdecken">${esc(c.title)}</a>`; }).join(', ')}.</p></section>`;
+  $('#pkgo').addEventListener('click',()=>startPK(k,$('input[name=pkm]:checked').value==='ernst',$('#pktm').checked));
+}
+function startPK(k,ernst,timer){
+  const tot=k.tasks.reduce((a,t)=>a+t.p,0), t0=Date.now();
+  $('#main').innerHTML=`<section class="pk-exam ${ernst?'ernst':''}"><div class="pk-bar"><div><p class="ch-depth"><span class="sbar"></span>${ernst?'Ernstfall':'Übungsmodus'} · ${tot} Punkte</p><h1>${esc(k.title)}</h1></div>${timer?`<span class="clock" id="clock">${k.minutes}:00</span>`:''}</div>
+    <div class="pk-cols"><aside class="pk-mat"><div class="pk-tabs" role="tablist">${k.materials.map((m,i)=>`<button class="seg-btn pkt" data-i="${i}" aria-pressed="${i===0}">${m.id}</button>`).join('')}</div>
+      ${k.materials.map((m,i)=>`<article class="panel pk-m" data-i="${i}" ${i?'hidden':''}><h3>${m.id}: ${esc(m.title)}</h3>${m.html}${m.fig?`<figure class="slide">${fig(m.fig)}</figure>`:''}</article>`).join('')}</aside>
+      <div class="pk-tasks">${k.tasks.map((t,i)=>`<p class="pk-nr">Aufgabe ${t.nr}</p>`+taskCard(null,t,i,`pk-${k.id}-${i}`,ernst?'probe':'')).join('')}
+      <div class="pane-end"><button class="btn" id="pkfin">${ernst?'Klausur abgeben':'Gesamtauswertung'}</button></div><div id="pkres"></div></div></div></section>`;
+  $$('.pkt').forEach(b=>b.addEventListener('click',()=>{ $$('.pkt').forEach(x=>x.setAttribute('aria-pressed',x===b)); $$('.pk-m').forEach(a=>a.hidden=a.dataset.i!==b.dataset.i); }));
+  $$('.task-head .op-wrap').forEach((w,i)=>{ const t=k.tasks[i]; if(t.ops&&t.ops.length>1) w.querySelector('.op-help').insertAdjacentHTML('beforebegin',t.ops.slice(1).map(o=>`<span class="op-x" title="${esc(OPERATORS[o]||'')}">+ ${esc(o)}</span>`).join('')); });
+  const sc={};
+  $$('.pk-tasks .task').forEach((card,i)=>bindTask(card,k.tasks[i],(tid,pts)=>{ sc[tid]=pts; markTask(tid,pts); }));
+  if(timer){ pkTimer=setInterval(()=>{ const left=k.minutes*60-Math.floor((Date.now()-t0)/1000), c=$('#clock'); if(!c){ clearInterval(pkTimer); return; } if(left<=0){ c.textContent='Zeit um'; c.classList.add('over'); clearInterval(pkTimer); return; } c.textContent=`${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`; },1000); CLEANUP.push(()=>clearInterval(pkTimer)); }
+  $('#pkfin').addEventListener('click',()=>{
+    clearInterval(pkTimer); $('.pk-exam').classList.remove('ernst');
+    $$('.pk-tasks .task').forEach((card,i)=>{ const tid=card.dataset.tid, tx=$('textarea',card).value.trim();
+      if(tx.split(/\s+/).length>=5) $('.chkbtn',card).click(); else { sc[tid]=0; $('.task-fb',card).innerHTML='<p class="fb-note">Nicht bearbeitet.</p>'; }
+      const sb=$('.solbtn',card); sb.hidden=false; sb.disabled=false; });
+    const got=k.tasks.reduce((a,t,i)=>a+(sc[`pk-${k.id}-${i}`]||0),0), pct=Math.round(got/tot*100);
+    $('#pkres').innerHTML=`<div class="summary panel"><p class="big-num">${got} / ${tot}</p><h2>${pct>=80?'Stark – das sitzt!':pct>=50?'Solide Grundlage. Vergleiche deine Antworten mit den Musterlösungen.':'Schau dir die Musterlösungen an und wiederhole die passenden Stationen.'}</h2>
+      <table class="tbl res"><thead><tr><th>Aufgabe</th><th>Operator</th><th>Check</th></tr></thead><tbody>${k.tasks.map((t,i)=>{ const v=sc[`pk-${k.id}-${i}`]||0; return `<tr><td>${t.nr}</td><td>${esc((t.ops||[t.op]).join(' + '))}</td><td><span class="meter"><i style="width:${Math.round(v/t.p*100)}%"></i></span> ${v} von ${t.p}</td></tr>`; }).join('')}</tbody></table>
+      <p class="fb-small">Der Check schätzt die Punkte anhand von Fachbegriffen und Kernaussagen. Unter jeder Aufgabe findest du jetzt Musterlösung und Erwartungshorizont.</p>
+      <div class="row center"><a class="btn ghost" href="#/pk/${k.id}">Neu beginnen</a><a class="btn" href="#/probe">Zum Klausur-Simulator</a></div></div>`;
+    $('#pkres').scrollIntoView({behavior:RM?'auto':'smooth'}); if(pct>=80) burst();
+  });
+}
+
 /* ===== App: Router, Startseite, Kapitel, Simulator ===== */
 const STAGES=[{k:'phaenomen',n:'Phänomen',d:'Ein Rätsel aus dem Alltag. Du vermutest und findest die Leitfrage.'},{k:'entdecken',n:'Entdecken',d:'Modelle drehen, Versuche starten, Infokarten aufdecken.'},{k:'ueben',n:'Üben',d:'Quizaufgaben von Basis bis Transfer – mit Tipps.'},{k:'klausur',n:'Klausur',d:'Aufgaben auf EF-Niveau mit gestuften Hilfen und Check.'},{k:'sicherung',n:'Sicherung',d:'Du beantwortest die Leitfrage und prüfst dich selbst.'}];
 const LVDESC={1:'Wissen abrufen',2:'Wissen anwenden',3:'auf Neues übertragen'};
@@ -2867,6 +3034,7 @@ function route(){
   const nav=(p)=>{ const a=$(`.nav a[href="#/${p}"]`); if(a) a.setAttribute('aria-current','page'); };
   if(h[0]==='karten'){ nav('karten'); return renderCards(); }
   if(h[0]==='probe'){ nav('probe'); return renderProbeSetup(); }
+  if(h[0]==='pk'){ const k=PROBEKLAUSUREN.find(x=>x.id===h[1]); if(k){ nav('probe'); return renderPK(k); } }
   if(h[0]==='operatoren'){ nav('operatoren'); return renderOperators(); }
   if(h[0]==='lehrkraft') return renderTeacher();
   nav(''); renderHome(h[0]==='plan');
@@ -2898,7 +3066,7 @@ function renderHome(jump){
         <div class="panel mission"><h3>Missionsplan</h3><p class="small muted">Welche Themen hattet ihr schon? Nur diese kommen im Klausur-Simulator dran.</p>
           <ul class="mis">${CHAPTERS.map(ch=>`<li><label><input type="checkbox" data-c="${ch.id}" ${S.active.includes(ch.id)?'checked':''}><span style="--c:${ch.color}">${ch.nr}</span> ${esc(ch.title)}</label></li>`).join('')}</ul></div>
         <div class="panel how"><h3>So lernst du an jeder Station</h3><ol class="how-l">${STAGES.map(s=>`<li><b>${s.n}</b><span>${s.d}</span></li>`).join('')}</ol></div>
-        <a class="panel cta" href="#/probe"><b>Klausur-Simulator</b><span>Gemischte Probeklausur aus ${act.length} Station${act.length===1?'':'en'} – mit Countdown.</span></a>
+        <a class="panel cta" href="#/probe"><b>Klausur-Simulator</b><span>Gemischte Probeklausur aus ${act.length} Station${act.length===1?'':'en'} oder eine ganze Klausur im Klausurformat.</span></a>
         <a class="panel cta alt" href="#/karten"><b>Karteikasten</b><span>Alle ${Object.keys(CARDS).length} Infokarten zum Wiederholen.</span></a>
       </aside>
     </div>
@@ -3026,7 +3194,7 @@ function renderProbeSetup(){
     <fieldset class="probe-opts panel"><legend>Umfang</legend>
       <label><input type="radio" name="len" value="s" checked> Kurz: 8 Quizaufgaben und 1 Klausuraufgabe (ca. 20 min)</label>
       <label><input type="radio" name="len" value="l"> Lang: 14 Quizaufgaben und 3 Klausuraufgaben (ca. 45 min)</label>
-      <label><input type="checkbox" id="tmr" checked> Mit Countdown</label></fieldset><button class="btn" id="go">Probeklausur starten</button>`:`<p class="fb-note">Dein Missionsplan ist leer. <a href="#/plan">Wähle Stationen im Tauchplan aus.</a></p>`}</section>`;
+      <label><input type="checkbox" id="tmr" checked> Mit Countdown</label></fieldset><button class="btn" id="go">Probeklausur starten</button>`:`<p class="fb-note">Dein Missionsplan ist leer. <a href="#/plan">Wähle Stationen im Tauchplan aus.</a></p>`}${probeCards()}</section>`;
   const go=$('#go'); if(go) go.addEventListener('click',()=>startProbe(act,$('input[name=len]:checked').value==='l',$('#tmr').checked));
 }
 function startProbe(act,long,timer){
